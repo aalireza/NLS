@@ -13,3 +13,10 @@ def limit_freq_threshold(num):
     acceptable_freq = sorted(freq_repo.keys())[::-1][:num]
     acceptable_letters = [freq_repo[freq] for freq in acceptable_freq]
     return acceptable_letters
+
+
+def regex_pattern_generator(text):
+    pattern_blocks = map(lambda x: "({}|{})\w*".format(x.lower(), x.upper()),
+                         list(text))
+    pattern = "\\b" + " ".join(pattern_blocks)
+    return pattern
