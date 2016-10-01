@@ -1,3 +1,6 @@
+import NumericalToolbox
+import EncryptionToolbox
+
 # Data from: https://en.wikipedia.org/wiki/Letter_frequency
 FIRST_LETTER_FREQ = {
     "a": 11.62, "b": 4.7, "c": 3.51, "d": 2.67, "e": 2, "f": 3.78, "g": 1.95,
@@ -15,8 +18,33 @@ def limit_freq_threshold(num):
     return acceptable_letters
 
 
+def first_letter_based_freq_rename(number, letters):
+    # The base of the number must match the number of the provided letters.
+    # Requires number in letter formatting
+    renamed = ''.join(
+        [letters[NumericalToolbox.letter_to_decimal(letter_digit)]
+         for letter_digit in list(number)])
+    return renamed
+
+
+def revert_renamed_number(renamed, letters):
+    number = ''.join(
+        [NumericalToolbox.decimal_to_letter(letters.index(letter_digit))
+         for letter_digit in renamed])
+    return number
+
+
 def regex_pattern_generator(text):
+    # Fix Regex
     pattern_blocks = map(lambda x: "({}|{})\w*".format(x.lower(), x.upper()),
                          list(text))
     pattern = "\\b" + " ".join(pattern_blocks)
     return pattern
+
+
+def encode(ciphertext, threshold=10):
+    # Implement Grep
+    freq_limit = limit_freq_threshold(threshold)
+    renamed_ciphertext = first_letter_based_freq_rename(ciphertext, freq_limit)
+    pattern = regex_pattern_generator(renamed_ciphertext)
+    print pattern
