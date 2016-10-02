@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+
+
+import EncodingToolbox
+import EncryptionToolbox
+import MarkovToolbox
+import NumericalToolbox
+import argparse
+
+
+def argument_handler():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--interactive", help="make interactive",
+                        action='store_true')
+    parser.add_argument("-t", "--threshold", help="How many frequent letters?",
+                        type=int, default=10)
+    parser.add_argument("-f", "--textfile", help="Absolute path to encoded file")
+    arg_group = parser.add_mutually_exclusive_group()
+    arg_group.add_argument("-e", "--encrypt", help="Encrypt a text",
+                           action='store_true')
+    arg_group.add_argument("-d", "--decrypt", help="Decrypt a text",
+                           action='store_true')
+    args = parser.parse_args()
+    return (args.encrypt, args.decrypt, args.threshold, args.textfile,
+            args.interactive)
+
+
+def encode(ciphertext, text_model, textfile, threshold=10):
+    freq_limit = EncodingToolbox.limit_freq_threshold(threshold)
+    renamed = EncodingToolbox.first_letter_based_freq_rename(ciphertext,
+                                                             freq_limit)
+    text = MarkovToolbox.generate_text_based_on_letter_list(renamed,
+                                                            text_model)
+    with open(textfile, "wb") as f:
+        f.write(text)
+    print "\n"
+    print text
+
+
+def decode(text, threshold=10):
+    freq_limit = EncodingToolbox.limit_freq_threshold(threshold)
+    ciphertext = ''.join(MarkovToolbox.derive_first_letter_of_every_sentence(text))
+    rerename = EncodingToolbox.revert_renamed_number(ciphertext, freq_limit)
+    if threshold != 10:
+        rerename = NumericalToolbox.change_base(rerename, 10, threshold)
+    return rerename
+
+if __name__ == '__main__':
+    encrypt, decrypt, threshold, textfile, interactive = argument_handler()
+    if not interactive:
+        if encrypt:
+            raw_text = str(raw_input("What is your message? "))
+            key = EncryptionToolbox.get_key()
+            ciphertext = EncryptionToolbox.encrypt(raw_text, key)
+            model_loc = "/home/alireza/Downloads/wiki2/two/model"
+            print "Loading Text model..."
+            text_model = MarkovToolbox.load_text_model(model_loc)
+            if text_model is not None:
+                if threshold != 10:
+                    ciphertext = NumericalToolbox.change_base(ciphertext, 10,
+                                                            threshold)
+                print "Encoding..."
+                print "need {} sentences".format(len(ciphertext))
+
+                encoding = encode(ciphertext, text_model,
+                                  textfile, threshold=10)
+
+        elif decrypt:
+            with open(textfile, "rb") as f:
+                text = f.read()
+            decoded = decode(text, 10)
+            key = EncryptionToolbox.get_key()
+            decrypted_text = EncryptionToolbox.decrypt(decoded, key)
+            print decrypted_text
+    else:
+        model_loc = "/home/alireza/Downloads/wiki2/two/model"
+        print "Loading Text model..."
+        text_model = MarkovToolbox.load_text_model(model_loc)
+        while True:
+            choice = str(raw_input("(e)ncrypt or (d)ecrypt or (q)uit? ")).rstrip()
+            if choice == "e":
+                raw_text = str(raw_input("What is your message? "))
+                key = EncryptionToolbox.get_key()
+                f_name = str(raw_input("What's the file name? "))
+                f_loc = "/home/alireza/Projects/Mine/NLS/data/{}".format(f_name)
+                ciphertext = EncryptionToolbox.encrypt(raw_text, key)
+                print "Encoding..."
+                print "need {} sentences".format(len(ciphertext))
+                encoding = encode(ciphertext, text_model,
+                                  f_loc, threshold=10)
+
+            elif choice == "d":
+                f_name = str(raw_input("What's the file name? "))
+                f_loc = "/home/alireza/Projects/Mine/NLS/data/{}".format(f_name)
+                with open(f_loc, "rb") as f:
+                    text = f.read()
+                decoded = decode(text, 10)
+                key = EncryptionToolbox.get_key()
+                decrypted_text = EncryptionToolbox.decrypt(decoded, key)
+                print decrypted_text
+
+            elif choice == "q":
+                raise SystemExit
+
+            print "\n"
+            print "\n"
