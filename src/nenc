@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 
-import NumericalToolbox
 import EncodingToolbox
 import EncryptionToolbox
+import MarkovToolbox
+import NumericalToolbox
 import argparse
 
 
@@ -26,8 +27,18 @@ if __name__ == '__main__':
         raw_text = str(raw_input("What is your message? "))
         key = EncryptionToolbox.get_key()
         ciphertext = EncryptionToolbox.encrypt(raw_text, key)
-        if threshold != 10:
-            ciphertext = NumericalToolbox.change_base(ciphertext, 10, threshold)
-        encoding = EncodingToolbox.encode(ciphertext, threshold)
+        model_loc = "/home/alireza/Downloads/wiki2/two/model"
+        print "Loading Text model..."
+        text_model = MarkovToolbox.load_text_model(model_loc)
+        if text_model is not None:
+            if threshold != 10:
+                ciphertext = NumericalToolbox.change_base(ciphertext, 10,
+                                                          threshold)
+            print "Encoding..."
+            print ciphertext
+            print len(ciphertext)
+            encoding = EncodingToolbox.encode(ciphertext, text_model, threshold)
+            print encoding
+
     # elif decrypt:
     # decrypted_text = EncryptionToolbox.decrypt(ciphertext, key)

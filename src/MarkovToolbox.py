@@ -17,7 +17,7 @@ def save_text_model(text_model, model_dump_abs_path):
             pickle.dump(text_model, f, protocol=2)
     if os.path.exists(model_dump_abs_path):
         return model_dump_abs_path
-    return False
+    return None
 
 
 def load_text_model(model_pickle_abs_path):
