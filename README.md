@@ -1,2 +1,2 @@
-# NLE
-Natural language encoding: Ciphertexts in form of natural language text
+# NLS
+Natural language Steganography: Encoding ciphertexts in form of natural language text
