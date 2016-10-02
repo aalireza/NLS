@@ -1,5 +1,20 @@
+"""
+ Copyright 2016 Alireza Rafiei
+
+ Licensed under the Apache License, Version 2.0 (the "License"); you may
+ not use this file except in compliance with the License. You may obtain
+ a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
+
 from Crypto.Cipher import AES
-from getpass import getpass
 import NumericalToolbox
 import binascii
 
@@ -8,28 +23,52 @@ PADDING_CHAR = '\x00'
 
 
 def pad(x):
+    """
+    Pads `x` to divide BLOCKSIZE
+
+    Parameters
+    ----------
+    x:          str
+
+    Returns
+    -------
+    paded       str
+    """
     topad = BLOCKSIZE - (len(x) % BLOCKSIZE)
     padded = x + topad * PADDING_CHAR
     return padded
 
 
 def unpad(x):
+    """
+    Removes PADDING_CHAR from `x`
+
+    Parameters
+    ----------
+    x:          str
+
+    Returns
+    -------
+    y:          str
+    """
     y = x.rstrip(PADDING_CHAR)
     return y
 
 
-def get_key():
-    key = None
-    confirmation = False
-    while confirmation != key:
-        key = getpass("What is your encryption key? ")
-        confirmation = getpass("Repeat your key: ")
-        if key != confirmation:
-            print "Your key doesn't match its confirmation"
-    return key
-
-
 def encrypt(text, key):
+    """
+    Encrypts with AES-128, ECB, constant blocksize.
+
+    Parameters
+    ----------
+    text:               str
+    key:                str
+
+    Returns
+    -------
+    lettered_ciphertext str
+                        In base 10, NLS formatting
+    """
     if len(key) % BLOCKSIZE != 0:
         key = pad(key)
     if len(text) % BLOCKSIZE != 0:
@@ -45,6 +84,19 @@ def encrypt(text, key):
 
 
 def decrypt(ciphertext, key):
+    """
+    decryptor for EncryptionToolbox.encrypt.
+
+    Parameters
+    ----------
+    ciphertext:         str
+                        In base 10, NLS formatting
+    key:                str
+
+    Returns
+    -------
+    plaintext           str
+    """
     if len(key) % BLOCKSIZE != 0:
         key = pad(key)
     ciphertext_decimals = NumericalToolbox.letters_to_decimals_change_base(

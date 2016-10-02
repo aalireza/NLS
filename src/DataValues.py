@@ -1,3 +1,36 @@
+"""
+ Copyright 2016 Alireza Rafiei
+
+ Licensed under the Apache License, Version 2.0 (the "License"); you may
+ not use this file except in compliance with the License. You may obtain
+ a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+"""
+
+# Data from: https://en.wikipedia.org/wiki/Letter_frequency
+FIRST_LETTER_FREQ = {
+    "a": 11.62, "b": 4.7, "c": 3.51, "d": 2.67, "e": 2, "f": 3.78, "g": 1.95,
+    "h": 7.23, "i": 6.29, "j": 0.597, "k": 0.59, "l": 2.705, "m": 4.383,
+    "n": 2.365, "o": 6.264, "p": 2.545, "q": 0.173, "r": 1.653, "s": 7.755,
+    "t": 16.671, "u": 1.487, "v": 0.649, "w": 6.753, "x": 0.017, "y": 1.62,
+    "z": 0.034
+}
+
+
+# To my knowledge, Markovify's text models doesn't allow for one to go into the
+# current state's words and pick one that starts with a given letter at random.
+# so the dictionary bellow exists to represent common words that are likely to
+# be in Markovify's text_model (which depends on the input of course) for the
+# said model to generate sentences that start with the given letter.
+# Data from:
+# https://www.usingenglish.com/resources/wordcheck/list-common+words.html
 FREQUENT_WORDS = {
     "a": ["above", "afraid", "against", "agree", "allow", "answer", "apple",
           "arm", "art", "able", "act", "after", "age", "air", "among",
