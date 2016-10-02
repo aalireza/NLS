@@ -82,7 +82,7 @@ if __name__ == '__main__':
                 raw_text = str(raw_input("What is your message? "))
                 key = EncryptionToolbox.get_key()
                 f_name = str(raw_input("What's the file name? "))
-                f_loc = "/home/alireza/Projects/Mine/Nenc/data/{}".format(f_name)
+                f_loc = "/home/alireza/Projects/Mine/NLS/data/{}".format(f_name)
                 ciphertext = EncryptionToolbox.encrypt(raw_text, key)
                 print "Encoding..."
                 print "need {} sentences".format(len(ciphertext))
@@ -91,7 +91,7 @@ if __name__ == '__main__':
 
             elif choice == "d":
                 f_name = str(raw_input("What's the file name? "))
-                f_loc = "/home/alireza/Projects/Mine/Nenc/data/{}".format(f_name)
+                f_loc = "/home/alireza/Projects/Mine/NLS/data/{}".format(f_name)
                 with open(f_loc, "rb") as f:
                     text = f.read()
                 decoded = decode(text, 10)
