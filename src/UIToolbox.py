@@ -62,12 +62,26 @@ def choice_handler():
 
     Returns
     -------
-    encrypt             (str x str x int x bool x bool) -> bool
-    decrypt             (str x int x bool)
+    encrypt             (str x str x str x str x int x bool x bool) -> str
+    decrypt             (str x str x int x bool)
     interactive         (str x str x int x bool)
+    vote                (str, [str])
 
     """
     def vote(question, choices):
+        """
+        Asks for a valid choice defined by existence in a list of available
+        choices.
+
+        Arguments
+        ---------
+        question        str
+        choices         [str]
+
+        Returns
+        -------
+        choice          str
+        """
         choice = None
         while choice not in choices:
             choice = str(raw_input("{} ({}): ".format(
@@ -77,8 +91,36 @@ def choice_handler():
         return choice
 
     def encrypt(model_loc, text_file_abs_path, plaintext=None, key=None,
-                threshold=10, silent=False, text_model_object=None):
-        text_file_abs_path, e, r = abs_path_validity(
+                threshold=10, silent=False, text_model_loaded=False):
+        """
+        The main interface for encrypting and encoding.
+
+        Arguments
+        ---------
+        model_loc               str
+                                Absolute path to the save text model
+        text_file_abs_path      str
+                                Absolute path to text file which will contain
+                                the result
+        plaintext               str
+                                The message to be encrypted.
+        key                     str
+                                The key for encryption
+        threshold               int
+                                The number of most probable letters
+        silent                  bool
+                                - `True` to print the output
+                                - `False` otherwise
+        text_model_object       bool
+                                - `True` if model is already loaded in memory
+                                - `False` otherwise
+
+        Returns
+        -------
+        text                    str
+                                The encoded ciphertext
+        """
+        text_file_abs_path, _, _ = abs_path_validity(
                 text_file_abs_path, "Text file",
                 addenda="That'll be created to contain the encoded results")
         model_loc, _ = model_loc_handler(model_loc, silent)
@@ -88,7 +130,7 @@ def choice_handler():
             key = get_key()
         ciphertext = EncryptionToolbox.encrypt(plaintext, key)
         if text_model_object is not None:
-            text_model = text_model_object
+            text_model = text_model_loaded
         else:
             if not silent:
                 print "Loading Text model..."
@@ -108,6 +150,25 @@ def choice_handler():
         return text
 
     def decrypt(text_file_abs_path, key=None, threshold=10, silent=False):
+        """
+        The main interface for decoding and decrypting
+
+        Arguments
+        ---------
+        text_file_abs_path      str
+                                Absolute path to the file containing the encoded
+                                ciphertext
+        key                     str
+        threshold               int
+                                Number of probable letters
+        silent                  bool
+                                - `True` if output is printed
+                                - `False` otherwise
+
+        Returns
+        -------
+        plaintext               str
+        """
         text_file_abs_path, _, _ = abs_path_validity(
             text_file_abs_path, file_name="Text file", must_exist=True,
             addenda=("-That already exists- which contain the encoded results"))
@@ -120,8 +181,23 @@ def choice_handler():
             print "Decrypting"
         plaintext = EncryptionToolbox.decrypt(ciphertext, key)
         print "\n{}\n".format(plaintext)
+        return plaintext
 
     def interactive(model_loc, text_file_abs_path, threshold=10, silent=False):
+        """
+        The interactive method.
+
+        Arguments
+        ---------
+        model_loc               str
+        text_file_abs_path      str
+        threshold               int
+        silent                  bool
+
+        Raises
+        -------
+        SystemExit              if choice == `q`
+        """
         text_file_abs_path, _, _ = abs_path_validity(
             text_file_abs_path,
             file_name="text file containg the encoded ciphertext",
@@ -166,16 +242,21 @@ def get_key():
 
 def abs_path_validity(abs_path, file_name, must_exist=False, addenda=""):
     """
-    Is used to either receive the location of the text file which is going to
-    contain encoded sentences, or to verify the location of the existing file.
+    It used to verify the validity of a path and to indicate whether it exists
+    or it's a path that can exist.
 
     Arguments
     ---------
-    textfile    str
+    abs_path        str
+    file_name       str
+    must_exist      bool
+    addenda         str
 
     Returns
     ---------
-    textfile    str
+    abs_path        str
+    exists          bool
+    can_exist       bool
     """
     while abs_path is None:
         abs_path = str(
@@ -194,6 +275,20 @@ def abs_path_validity(abs_path, file_name, must_exist=False, addenda=""):
 
 
 def model_loc_handler(model_loc, silent=False):
+    """
+    Asks for text model location. If not found, trains the hmm model.
+
+    Arguments
+    ---------
+    model_loc           str
+                        Absolute path to text model
+    silent              bool
+
+    Returns
+    -------
+    model_loc           str
+    model_exists        bool
+    """
     model_loc, model_exists, _ = abs_path_validity(
         model_loc, "text model",
         addenda="(if file doesn't exists, it'll be created)")
