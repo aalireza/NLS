@@ -140,6 +140,8 @@ def make_sentence_starting_with_letter(letter, text_model):
         if sentence is not None:
             if sentence.count('.') == 1:
                 break
+    # Make first letter of every sentence capitalized.
+    sentence = sentence[0].upper() + sentence[1:]
     return sentence
 
 

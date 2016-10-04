@@ -81,15 +81,15 @@ def choice_handler():
         if text_model is not None:
             if not silent:
                 print "Encoding..."
-            encoding = EncodingToolbox.encode(ciphertext, text_model,
-                                              text_file_abs_path, threshold,
-                                              silent)
-            if encoding is not None:
+            text, _ = EncodingToolbox.encode(ciphertext, text_model,
+                                             text_file_abs_path, threshold,
+                                             silent)
+            if text is not None:
                 if not silent:
                     choice = vote("Do you want to see the generated text?")
                     if choice == "y":
-                        print encoding[0]
-        return None
+                        print "\n{}\n".format(text)
+        return text
 
     def decrypt(text_file_abs_path, threshold=10, silent=False):
         key = get_key()
@@ -101,7 +101,7 @@ def choice_handler():
         plaintext = EncryptionToolbox.decrypt(ciphertext, key)
         choice = vote("Do yo want to see the plaintext?")
         if choice == "y":
-            print plaintext
+            print "\n{}\n".format(plaintext)
 
     def interactive(model_loc, text_file_abs_path, threshold=10, silent=False):
         text_file_abs_path = text_file_path_validity(text_file_abs_path)
@@ -117,6 +117,7 @@ def choice_handler():
                     raw_input("(e)ncrypt or (d)ecrypt or (q)uit: ")
                 ).rstrip().lower()
                 if choice == "e":
+
                     encrypt(model_loc, text_file_abs_path, threshold, silent,
                             text_model_object=text_model)
                 elif choice == "d":

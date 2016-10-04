@@ -120,7 +120,7 @@ def encode(ciphertext, text_model, text_file_abs_path, threshold=10,
             f.write(text)
         return text, text_file_abs_path
     except Exception:
-        return None
+        return None, None
 
 
 def decode(text_file_abs_path, threshold=10):
