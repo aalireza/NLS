@@ -91,7 +91,7 @@ def choice_handler():
         return choice
 
     def encrypt(model_loc, text_file_abs_path, plaintext=None, key=None,
-                threshold=10, silent=False, text_model_loaded=False):
+                threshold=10, silent=False):
         """
         The main interface for encrypting and encoding.
 
@@ -111,9 +111,6 @@ def choice_handler():
         silent                  bool
                                 - `True` to print the output
                                 - `False` otherwise
-        text_model_object       bool
-                                - `True` if model is already loaded in memory
-                                - `False` otherwise
 
         Returns
         -------
@@ -123,14 +120,14 @@ def choice_handler():
         text_file_abs_path, _, _ = abs_path_validity(
                 text_file_abs_path, "Text file",
                 addenda="That'll be created to contain the encoded results")
-        model_loc, _ = model_loc_handler(model_loc, silent)
+        model_loc, _, loaded_model = model_loc_handler(model_loc, silent)
         if plaintext is None:
             plaintext = str(raw_input("What is your message? "))
         if key is None:
             key = get_key()
         ciphertext = EncryptionToolbox.encrypt(plaintext, key)
-        if text_model_object is not None:
-            text_model = text_model_loaded
+        if loaded_model is not None:
+            text_model = loaded_model
         else:
             if not silent:
                 print "Loading Text model..."
@@ -212,7 +209,7 @@ def choice_handler():
             choice = vote("Encrypt or Decrypt or Quit ", ["e", "d", "q"])
             if choice == "e":
                 encrypt(model_loc, text_file_abs_path, threshold=threshold,
-                        silent=silent, text_model_object=text_model)
+                        silent=silent)
             elif choice == "d":
                 decrypt(text_file_abs_path, threshold, silent)
             elif choice == "q":
@@ -288,7 +285,11 @@ def model_loc_handler(model_loc, silent=False):
     -------
     model_loc           str
     model_exists        bool
+    text_model          object
+                        The model that's already loaded in memory. `None` if
+                        model is not loaded
     """
+    text_model = None
     model_loc, model_exists, _ = abs_path_validity(
         model_loc, "text model",
         addenda="(if file doesn't exists, it'll be created)")
@@ -304,4 +305,4 @@ def model_loc_handler(model_loc, silent=False):
         if not silent:
             print "Saving the model in {}".format(model_loc)
         MarkovToolbox.save_text_model(text_model, model_loc)
-    return model_loc, model_exists
+    return model_loc, model_exists, text_model
