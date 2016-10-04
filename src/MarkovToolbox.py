@@ -18,7 +18,6 @@ from random import choice
 import DataValues
 import cPickle as pickle
 import markovify
-import os
 
 
 def make_text_model(text_file_abs_path):
@@ -35,13 +34,14 @@ def make_text_model(text_file_abs_path):
     text_model              object
                             The text_model object
     """
-    if not os.path.exists(text_file_abs_path):
-        print "{} doesn't exist or not reachable".format(text_file_abs_path)
-        return None
-    with open(text_file_abs_path, "r") as f:
-        text = f.read()
-    text_model = markovify.Text(text)
-    return text_model
+    try:
+        with open(text_file_abs_path, "r") as f:
+            text = f.read()
+        text_model = markovify.Text(text)
+        return text_model
+    except:
+        print "There was something wrong with opening up the text file"
+        raise SystemExit
 
 
 def save_text_model(text_model, model_dump_abs_path):
@@ -66,7 +66,8 @@ def save_text_model(text_model, model_dump_abs_path):
             pickle.dump(text_model, f, protocol=2)
         return True
     except Exception:
-        return None
+        print "There was something wrong with saving your model"
+        raise SystemExit
 
 
 def load_text_model(model_dump_abs_path):

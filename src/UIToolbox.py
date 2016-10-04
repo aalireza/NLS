@@ -24,7 +24,7 @@ import os
 
 def argument_handler():
     parser = argparse.ArgumentParser()
-    arg_group = parser.add_mutually_exclusive_group()
+    arg_group = parser.add_mutually_exclusive_group(required=True)
     arg_group.add_argument("-e", "--encrypt", help="Encrypt a text",
                            action='store_true')
     arg_group.add_argument("-d", "--decrypt", help="Decrypt a text",
@@ -35,6 +35,9 @@ def argument_handler():
                         help=str("What's the lower limit on the most used " +
                                  "letter to start a sentence or a word?"),
                         type=int, default=10)
+    parser.add_argument("-p", "--plaintext", help="What's your message?",
+                        type=str)
+    parser.add_argument("-k", "--key", help="What's your key?", type=str)
     parser.add_argument("-m", "--model_loc",
                         help="Absolute path to the markovify text model")
     parser.add_argument("-f", "--textfile",
@@ -42,10 +45,15 @@ def argument_handler():
                                  "file which either contains or will contain" +
                                  "the encoded sentences"))
     parser.add_argument("-s", "--is_silent",
-                        help="suppress output", default=False)
+                        help="suppress output", action='store_true')
     args = parser.parse_args()
-    return (args.encrypt, args.decrypt, args.threshold, args.model_loc,
-            args.textfile, args.is_interactive, args.is_silent)
+    if args.is_interactive:
+        if any([args.plaintext, args.key]):
+            print "Cannot use -p or -k with -i"
+            raise SystemExit
+    return (args.encrypt, args.decrypt, args.plaintext, args.key,
+            args.threshold, args.model_loc, args.textfile, args.is_interactive,
+            args.is_silent)
 
 
 def choice_handler():
@@ -59,19 +67,26 @@ def choice_handler():
     interactive         (str x str x int x bool)
 
     """
-    def vote(question):
+    def vote(question, choices):
         choice = None
-        while choice not in ["y", "n"]:
-            choice = str(raw_input("{} (y/n): ".format(question))).lower()
-            if choice not in ["y", "n"]:
+        while choice not in choices:
+            choice = str(raw_input("{} ({}): ".format(
+                question, "/".join(choices)))).rstrip().lower()
+            if choice not in choices:
                 print "Invalid choice"
         return choice
 
-    def encrypt(model_loc, text_file_abs_path, threshold=10, silent=False,
-                text_model_object=None):
-        raw_text = str(raw_input("What is your message? "))
-        key = get_key()
-        ciphertext = EncryptionToolbox.encrypt(raw_text, key)
+    def encrypt(model_loc, text_file_abs_path, plaintext=None, key=None,
+                threshold=10, silent=False, text_model_object=None):
+        text_file_abs_path, e, r = abs_path_validity(
+                text_file_abs_path, "Text file",
+                addenda="That'll be created to contain the encoded results")
+        model_loc, _ = model_loc_handler(model_loc, silent)
+        if plaintext is None:
+            plaintext = str(raw_input("What is your message? "))
+        if key is None:
+            key = get_key()
+        ciphertext = EncryptionToolbox.encrypt(plaintext, key)
         if text_model_object is not None:
             text_model = text_model_object
         else:
@@ -86,49 +101,48 @@ def choice_handler():
                                              silent)
             if text is not None:
                 if not silent:
-                    choice = vote("Do you want to see the generated text?")
+                    choice = vote("Do you want to see the generated text?",
+                                  ["y", "n"])
                     if choice == "y":
                         print "\n{}\n".format(text)
         return text
 
-    def decrypt(text_file_abs_path, threshold=10, silent=False):
-        key = get_key()
+    def decrypt(text_file_abs_path, key=None, threshold=10, silent=False):
+        text_file_abs_path, _, _ = abs_path_validity(
+            text_file_abs_path, file_name="Text file", must_exist=True,
+            addenda=("-That already exists- which contain the encoded results"))
+        if key is None:
+            key = get_key()
         if not silent:
             print "Decoding"
         ciphertext = EncodingToolbox.decode(text_file_abs_path, threshold)
         if not silent:
             print "Decrypting"
         plaintext = EncryptionToolbox.decrypt(ciphertext, key)
-        choice = vote("Do yo want to see the plaintext?")
-        if choice == "y":
-            print "\n{}\n".format(plaintext)
+        print "\n{}\n".format(plaintext)
 
     def interactive(model_loc, text_file_abs_path, threshold=10, silent=False):
-        text_file_abs_path = text_file_path_validity(text_file_abs_path)
+        text_file_abs_path, _, _ = abs_path_validity(
+            text_file_abs_path,
+            file_name="text file containg the encoded ciphertext",
+            addenda="(if file doesn't exists, it'll be created)")
+        model_loc, model_exists = model_loc_handler(model_loc, silent)
         if not silent:
             print "Loading Text model..."
         text_model = MarkovToolbox.load_text_model(model_loc)
         if text_model is None:
             print "Model can't be loaded"
-        choice = None
         while True:
-            if choice not in ["e", "d", "q"]:
-                choice = str(
-                    raw_input("(e)ncrypt or (d)ecrypt or (q)uit: ")
-                ).rstrip().lower()
-                if choice == "e":
+            choice = vote("Encrypt or Decrypt or Quit ", ["e", "d", "q"])
+            if choice == "e":
+                encrypt(model_loc, text_file_abs_path, threshold=threshold,
+                        silent=silent, text_model_object=text_model)
+            elif choice == "d":
+                decrypt(text_file_abs_path, threshold, silent)
+            elif choice == "q":
+                raise SystemExit
 
-                    encrypt(model_loc, text_file_abs_path, threshold, silent,
-                            text_model_object=text_model)
-                elif choice == "d":
-                    decrypt(text_file_abs_path, threshold, silent)
-                elif choice == "q":
-                    raise SystemExit
-                else:
-                    print "Invalid choice"
-                choice = None
-
-    return encrypt, decrypt, interactive
+    return encrypt, decrypt, interactive, vote
 
 
 def get_key():
@@ -150,7 +164,7 @@ def get_key():
     return key
 
 
-def text_file_path_validity(textfile):
+def abs_path_validity(abs_path, file_name, must_exist=False, addenda=""):
     """
     Is used to either receive the location of the text file which is going to
     contain encoded sentences, or to verify the location of the existing file.
@@ -163,17 +177,36 @@ def text_file_path_validity(textfile):
     ---------
     textfile    str
     """
-    if textfile is None:
-        textfile = str(raw_input("Enter absolute path to text file: "))
-    if not os.path.exists(textfile):
-        if not os.access(os.path.dirname(textfile), os.W_OK):
-            while not os.access(os.path.dirname(textfile), os.W_OK):
-                textfile = str(
-                    raw_input("Invalid or unaccessible path. " +
-                              "Enter absolute path to the file: "))
-    return textfile
+    while abs_path is None:
+        abs_path = str(
+            raw_input("Enter absolute path to {} {}: ".format(
+                file_name, addenda)))
+    while not os.access(os.path.dirname(abs_path), os.W_OK):
+        abs_path = str(
+            raw_input("Invalid or unaccessible path. " +
+                      "Enter absolute path to {} {}: ".format(
+                            file_name, addenda)))
+    if must_exist and not os.path.exists(abs_path):
+        return None, False, False
+    exists = os.path.exists(abs_path)
+    can_exist = os.access(os.path.dirname(abs_path), os.W_OK)
+    return abs_path, exists, can_exist
 
 
-def model_loc_handler():
-    # Not yet implemented.
-    pass
+def model_loc_handler(model_loc, silent=False):
+    model_loc, model_exists, _ = abs_path_validity(
+        model_loc, "text model",
+        addenda="(if file doesn't exists, it'll be created)")
+    if not model_exists:
+        training_text_abs_path, training_text_exists, _ = abs_path_validity(
+            None, "Training text", must_exist=True)
+        while not training_text_exists:
+            training_text_abs_path, training_text_exists, _ = abs_path_validity(
+                None, "Training text", must_exist=True)
+        if not silent:
+            print "Training the HMM..."
+        text_model = MarkovToolbox.make_text_model(training_text_abs_path)
+        if not silent:
+            print "Saving the model in {}".format(model_loc)
+        MarkovToolbox.save_text_model(text_model, model_loc)
+    return model_loc, model_exists
