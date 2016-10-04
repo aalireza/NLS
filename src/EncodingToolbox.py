@@ -58,7 +58,7 @@ def first_letter_based_freq_rename(number, letters):
     renamed             str
     """
     # The base of the number must match the number of the provided letters.
-    # Requires number in letter formatting
+    # Requires number in letter formatting (non-standard)
     renamed = ''.join(
         [letters[NumericalToolbox.letter_to_decimal(letter_digit)]
          for letter_digit in list(number)])
@@ -108,9 +108,9 @@ def encode(ciphertext, text_model, text_file_abs_path, threshold=10,
                             Otherwise:
                             None
     """
-    # if threshold != 10:
-    #     ciphertext = NumericalToolbox.change_base(ciphertext, threshold, 10,
-    #                                               standard_formatting=False)
+    if threshold != 10:
+        ciphertext = NumericalToolbox.change_base(ciphertext, 10, threshold,
+                                                  standard_formatting=False)
     freq_limit = limit_freq_threshold(threshold)
     renamed = first_letter_based_freq_rename(ciphertext, freq_limit)
     text = MarkovToolbox.generate_text_based_on_letter_list(renamed, text_model,
@@ -144,7 +144,7 @@ def decode(text_file_abs_path, threshold=10):
     renamed_ciphertext = ''.join(
         MarkovToolbox.derive_first_letter_of_every_sentence(text))
     ciphertext = revert_renamed_number(renamed_ciphertext, freq_limit)
-    # if threshold != 10:
-    #     ciphertext = NumericalToolbox.change_base(ciphertext, threshold, 10,
-    #                                               standard_formatting=False)
+    if threshold != 10:
+        ciphertext = NumericalToolbox.change_base(ciphertext, threshold, 10,
+                                                  standard_formatting=False)
     return ciphertext

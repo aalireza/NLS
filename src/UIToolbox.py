@@ -91,7 +91,7 @@ def choice_handler():
         return choice
 
     def encrypt(model_loc, text_file_abs_path, plaintext=None, key=None,
-                threshold=10, silent=False):
+                threshold=10, silent=False, loaded_text_model=None):
         """
         The main interface for encrypting and encoding.
 
@@ -111,6 +111,8 @@ def choice_handler():
         silent                  bool
                                 - `True` to print the output
                                 - `False` otherwise
+        loaded_text_model       object
+                                The loaded text model in the memory
 
         Returns
         -------
@@ -120,14 +122,14 @@ def choice_handler():
         text_file_abs_path, _, _ = abs_path_validity(
                 text_file_abs_path, "Text file",
                 addenda="That'll be created to contain the encoded results")
-        model_loc, _, loaded_model = model_loc_handler(model_loc, silent)
+        model_loc, _, text_model = model_loc_handler(model_loc, silent)
         if plaintext is None:
             plaintext = str(raw_input("What is your message? "))
         if key is None:
             key = get_key()
         ciphertext = EncryptionToolbox.encrypt(plaintext, key)
-        if loaded_model is not None:
-            text_model = loaded_model
+        if loaded_text_model is not None:
+            text_model = loaded_text_model
         else:
             if not silent:
                 print "Loading Text model..."
@@ -193,25 +195,27 @@ def choice_handler():
 
         Raises
         -------
-        SystemExit              if choice == `q`
+        SystemExit              if choice == `q` or if text_model is None
         """
         text_file_abs_path, _, _ = abs_path_validity(
             text_file_abs_path,
             file_name="text file containg the encoded ciphertext",
             addenda="(if file doesn't exists, it'll be created)")
-        model_loc, model_exists = model_loc_handler(model_loc, silent)
+        model_loc, model_exists, text_model = model_loc_handler(model_loc,
+                                                                silent)
         if not silent:
             print "Loading Text model..."
         text_model = MarkovToolbox.load_text_model(model_loc)
         if text_model is None:
             print "Model can't be loaded"
+            raise SystemExit
         while True:
             choice = vote("Encrypt or Decrypt or Quit ", ["e", "d", "q"])
             if choice == "e":
                 encrypt(model_loc, text_file_abs_path, threshold=threshold,
-                        silent=silent)
+                        silent=silent, loaded_text_model=text_model)
             elif choice == "d":
-                decrypt(text_file_abs_path, threshold, silent)
+                decrypt(text_file_abs_path, threshold=threshold, silent=silent)
             elif choice == "q":
                 raise SystemExit
 

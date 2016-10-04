@@ -1,5 +1,4 @@
 3- Data on words for the sentences' starts should be implemented.
-4- Data threshold doesn't work for other than 10
 5- Change to CBS encryption
 6- Access words within Markovify's state (instead of creating a list of suspected words)
 7- Arguments
