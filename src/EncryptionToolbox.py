@@ -15,66 +15,92 @@
 """
 
 from Crypto.Cipher import AES
+from Crypto.Protocol import KDF
 import NumericalToolbox
 import binascii
 
+# Blocksize by default is 32 bytes for AES-256. Change to 16 for AES-128 and 24
+# for AES-192
 BLOCKSIZE = 16
-PADDING_CHAR = '\x00'
 
+# There are randomly generated but hard coded. Thinking the probability of
+# someone using this in real life is infinitesimal, I hard coded them to reduce
+# the complexity of the interface. If you're actually trying to use it, then
+# use the function `Crypto.Random.get_random_bytes` to generate a unique IV and
+# a unique SALT for a every password.
+SALT = '_\x94\xdb\xbd\xd8\xdd?5\xff\xb5\xe1\x9d\xbe\n\x16\xc2'
+IV = '\x03\x0c\x06\xf0B\xdb\xcbv!0\xe4\xea"\xc3;-'
 
-def pad(x):
+def gen_key(password, salt, dkLen=BLOCKSIZE):
     """
-    Pads `x` to divide BLOCKSIZE
+    Implement PBKDF2 to make short passwords match the BLOCKSIZE.
 
-    Parameters
-    ----------
-    x:          str
+    Arguments
+    ---------
+    password            str
+    salt                str
+    dkLen               int
 
     Returns
     -------
-    paded       str
+    -                   str
     """
-    topad = BLOCKSIZE - (len(x) % BLOCKSIZE)
-    padded = x + topad * PADDING_CHAR
+    return KDF.PBKDF2(password, salt, dkLen=BLOCKSIZE)
+
+
+def pad(plaintext):
+    """
+    Implements PKCS#7 to pad `plaintext`. Not intended to be used for passwords.
+
+    Parameters
+    ----------
+    plaintext:  str
+
+    Returns
+    -------
+    padded:     str
+    """
+    topad = BLOCKSIZE - (len(plaintext) % BLOCKSIZE)
+    padded = str(plaintext + bytearray([topad] * topad))
     return padded
 
 
-def unpad(x):
+def unpad(padded_plaintext):
     """
-    Removes PADDING_CHAR from `x`
+    Reverses EncryptionToolbox.pad
 
     Parameters
     ----------
-    x:          str
+    padded_plaintext:          str
 
     Returns
     -------
-    y:          str
+    plaintext:                 str
     """
-    y = x.rstrip(PADDING_CHAR)
-    return y
+    bytestring = bytearray(padded_plaintext)
+    padding_char = bytestring[-1]
+    plaintext = str(bytestring[: len(bytestring) - padding_char])
+    return plaintext
 
 
-def encrypt(text, key):
+def encrypt(text, password, salt=SALT, IV=IV):
     """
-    Encrypts with AES-128, ECB, constant blocksize.
+    Encrypts with AES, CBC.
 
     Parameters
     ----------
     text:               str
-    key:                str
+    password:           str
 
     Returns
     -------
     lettered_ciphertext str
                         In base 10, NLS formatting
     """
-    if len(key) % BLOCKSIZE != 0:
-        key = pad(key)
-    if len(text) % BLOCKSIZE != 0:
-        text = pad(text)
-    cipher = AES.AESCipher(key, AES.MODE_ECB)
-    ciphertext = cipher.encrypt(text)
+    padded_text = pad(text)
+    key = gen_key(password, salt)
+    cipher = AES.AESCipher(key, AES.MODE_CBC, IV=IV)
+    ciphertext = cipher.encrypt(padded_text)
     b16 = binascii.hexlify(bytearray(ciphertext))
     ciphertext_base_10 = NumericalToolbox.letters_to_decimals_change_base(
         b16, 16, standard_formatting=True)
@@ -83,7 +109,7 @@ def encrypt(text, key):
     return lettered_ciphertext
 
 
-def decrypt(ciphertext, key):
+def decrypt(ciphertext, password, salt=SALT, IV=IV):
     """
     decryptor for EncryptionToolbox.encrypt.
 
@@ -97,13 +123,12 @@ def decrypt(ciphertext, key):
     -------
     plaintext           str
     """
-    if len(key) % BLOCKSIZE != 0:
-        key = pad(key)
     ciphertext_decimals = NumericalToolbox.letters_to_decimals_change_base(
         ciphertext, 10)
     ciphertext16 = NumericalToolbox.decimals_to_letters_change_base(
         ciphertext_decimals, 16, standard_formatting=True)
-    ct = binascii.unhexlify(ciphertext16)
-    cipher = AES.AESCipher(key, AES.MODE_ECB)
-    plaintext = unpad(cipher.decrypt(ct))
-    return plaintext
+    ciphertext_original = binascii.unhexlify(ciphertext16)
+    key = gen_key(password, salt)
+    cipher = AES.AESCipher(key, AES.MODE_CBC, IV=IV)
+    padded_plaintext = cipher.decrypt(ciphertext_original)
+    return unpad(padded_plaintext)

@@ -19,14 +19,15 @@ import UIToolbox
 
 
 if __name__ == '__main__':
-    (should_encrypt, should_decrypt, plaintext, key, threshold, model_loc,
+    (should_encrypt, should_decrypt, plaintext, password, threshold, model_loc,
      textfile, is_interactive, silent) = UIToolbox.argument_handler()
     encrypt, decrypt, interactive, _ = UIToolbox.choice_handler()
     if is_interactive:
         interactive(model_loc, textfile, threshold, silent)
     else:
         if should_encrypt:
-            encrypt(model_loc, textfile, plaintext=plaintext, key=key,
+            encrypt(model_loc, textfile, plaintext=plaintext, password=password,
                     threshold=threshold, silent=silent)
         elif should_decrypt:
-            decrypt(textfile, key=key, threshold=threshold, silent=silent)
+            decrypt(textfile, password=password, threshold=threshold,
+                    silent=silent)

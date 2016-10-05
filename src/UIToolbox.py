@@ -31,13 +31,14 @@ def argument_handler():
                            action='store_true')
     arg_group.add_argument("-i", "--is_interactive", help="make interactive",
                            action='store_true')
-    parser.add_argument("-t", "--threshold",
+    parser.add_argument("-w", "--word_threshold",
                         help=str("What's the lower limit on the most used " +
                                  "letter to start a sentence or a word?"),
                         type=int, default=10)
-    parser.add_argument("-p", "--plaintext", help="What's your message?",
+    parser.add_argument("-t", "--plaintext", help="What's your message?",
                         type=str)
-    parser.add_argument("-k", "--key", help="What's your key?", type=str)
+    parser.add_argument("-p", "--password", help="What's your password?",
+                        type=str)
     parser.add_argument("-m", "--model_loc",
                         help="Absolute path to the markovify text model")
     parser.add_argument("-f", "--textfile",
@@ -48,12 +49,12 @@ def argument_handler():
                         help="suppress output", action='store_true')
     args = parser.parse_args()
     if args.is_interactive:
-        if any([args.plaintext, args.key]):
+        if any([args.plaintext, args.password]):
             print "Cannot use -p or -k with -i"
             raise SystemExit
-    return (args.encrypt, args.decrypt, args.plaintext, args.key,
-            args.threshold, args.model_loc, args.textfile, args.is_interactive,
-            args.is_silent)
+    return (args.encrypt, args.decrypt, args.plaintext, args.password,
+            args.word_threshold, args.model_loc, args.textfile,
+            args.is_interactive, args.is_silent)
 
 
 def choice_handler():
@@ -90,7 +91,7 @@ def choice_handler():
                 print "Invalid choice"
         return choice
 
-    def encrypt(model_loc, text_file_abs_path, plaintext=None, key=None,
+    def encrypt(model_loc, text_file_abs_path, plaintext=None, password=None,
                 threshold=10, silent=False, loaded_text_model=None):
         """
         The main interface for encrypting and encoding.
@@ -104,8 +105,8 @@ def choice_handler():
                                 the result
         plaintext               str
                                 The message to be encrypted.
-        key                     str
-                                The key for encryption
+        password                str
+                                The password for encryption
         threshold               int
                                 The number of most probable letters
         silent                  bool
@@ -125,9 +126,9 @@ def choice_handler():
         model_loc, _, text_model = model_loc_handler(model_loc, silent)
         if plaintext is None:
             plaintext = str(raw_input("What is your message? "))
-        if key is None:
-            key = get_key()
-        ciphertext = EncryptionToolbox.encrypt(plaintext, key)
+        if password is None:
+            password = get_password()
+        ciphertext = EncryptionToolbox.encrypt(plaintext, password)
         if loaded_text_model is not None:
             text_model = loaded_text_model
         else:
@@ -148,7 +149,7 @@ def choice_handler():
                         print "\n{}\n".format(text)
         return text
 
-    def decrypt(text_file_abs_path, key=None, threshold=10, silent=False):
+    def decrypt(text_file_abs_path, password=None, threshold=10, silent=False):
         """
         The main interface for decoding and decrypting
 
@@ -157,7 +158,7 @@ def choice_handler():
         text_file_abs_path      str
                                 Absolute path to the file containing the encoded
                                 ciphertext
-        key                     str
+        password                str
         threshold               int
                                 Number of probable letters
         silent                  bool
@@ -171,14 +172,14 @@ def choice_handler():
         text_file_abs_path, _, _ = abs_path_validity(
             text_file_abs_path, file_name="Text file", must_exist=True,
             addenda=("-That already exists- which contain the encoded results"))
-        if key is None:
-            key = get_key()
+        if password is None:
+            password = get_password()
         if not silent:
             print "Decoding"
         ciphertext = EncodingToolbox.decode(text_file_abs_path, threshold)
         if not silent:
             print "Decrypting"
-        plaintext = EncryptionToolbox.decrypt(ciphertext, key)
+        plaintext = EncryptionToolbox.decrypt(ciphertext, password)
         print "\n{}\n".format(plaintext)
         return plaintext
 
@@ -222,23 +223,23 @@ def choice_handler():
     return encrypt, decrypt, interactive, vote
 
 
-def get_key():
+def get_password():
     """
     The value would be directly passed to an encryption function. The shadowing
     is only for UI purposes.
 
     Returns
     -------
-    key:        str
+    password:        str
     """
-    key = None
+    password = None
     confirmation = False
-    while confirmation != key:
-        key = getpass("What is your encryption key? ")
-        confirmation = getpass("Repeat your key: ")
-        if key != confirmation:
-            print "Your key doesn't match its confirmation"
-    return key
+    while confirmation != password:
+        password = getpass("What is your encryption password? ")
+        confirmation = getpass("Repeat your password: ")
+        if password != confirmation:
+            print "Your password doesn't match its confirmation"
+    return password
 
 
 def abs_path_validity(abs_path, file_name, must_exist=False, addenda=""):
