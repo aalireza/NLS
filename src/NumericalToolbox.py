@@ -34,11 +34,11 @@ def letter_to_decimal(letter):
 
     Arguments
     ---------
-        letter          str
+    letter          str
 
     Returns
     -------
-        decimal         int
+    decimal         int
     """
     decimal = dict(zip(NUM_REPO.values(), NUM_REPO.keys()))[letter]
     return decimal

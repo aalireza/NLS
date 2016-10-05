@@ -19,8 +19,7 @@ from Crypto.Protocol import KDF
 import NumericalToolbox
 import binascii
 
-# Blocksize by default is 32 bytes for AES-256. Change to 16 for AES-128 and 24
-# for AES-192
+# Blocksize by default is 16 bytes for AES-128.
 BLOCKSIZE = 16
 
 # There are randomly generated but hard coded. Thinking the probability of
@@ -85,7 +84,8 @@ def unpad(padded_plaintext):
 
 def encrypt(text, password, salt=SALT, IV=IV):
     """
-    Encrypts with AES, CBC.
+    Encrypts with AES, CBC. Then changes the representation of the ciphertext to
+    our previously defined letter formatting in NumericalToolbox.
 
     Parameters
     ----------

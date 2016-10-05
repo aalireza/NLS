@@ -35,8 +35,8 @@ def limit_freq_threshold(num):
     acceptable_letters  [str]
     """
     freq_repo = DataValues.FIRST_LETTER_FREQ
-    # freq_repo = dict(zip(DataValues.FIRST_LETTER_FREQ.values(),
-    #                      DataValues.FIRST_LETTER_FREQ.keys()))
+
+    # Reversing freq_repo while accounting for duplicate values.
     reversed_freq_repo = {}
     for key, value in freq_repo.iteritems():
         if value in reversed_freq_repo.keys():
@@ -49,6 +49,9 @@ def limit_freq_threshold(num):
     acceptable_lists_of_letters = [reversed_freq_repo[freq]
                                    for freq in acceptable_freq]
 
+    # Since there may be multiple letters for a given frequency, we randomly
+    # choose one that's not been chosen, otherwise we'll choose the only letter
+    # that matches the frequency.
     acceptable_letters = []
     for letter_list in acceptable_lists_of_letters[:num]:
         if len(letter_list) == 1:

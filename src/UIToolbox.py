@@ -50,7 +50,7 @@ def argument_handler():
     args = parser.parse_args()
     if args.is_interactive:
         if any([args.plaintext, args.password]):
-            print "Cannot use -p or -k with -i"
+            print "Cannot use -p or -t with -i"
             raise SystemExit
     return (args.encrypt, args.decrypt, args.plaintext, args.password,
             args.word_threshold, args.model_loc, args.textfile,
@@ -64,9 +64,9 @@ def choice_handler():
     Returns
     -------
     encrypt             (str x str x str x str x int x bool x bool) -> str
-    decrypt             (str x str x int x bool)
+    decrypt             (str x str x int x bool) -> str
     interactive         (str x str x int x bool)
-    vote                (str, [str])
+    vote                (str, [str]) -> str
 
     """
     def vote(question, choices):
