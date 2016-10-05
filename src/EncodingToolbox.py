@@ -14,13 +14,13 @@
  limitations under the License.
 """
 
+from random import choice
 import DataValues
 import NumericalToolbox
 import MarkovToolbox
 
 
 def limit_freq_threshold(num):
-    # To be Implement https://glossarch.wordpress.com/2014/01/14/the-most-common-letter-to-start-a-sentence-with-in-english/
     """
     Gets a list of `num` English letters that are most frequently appear based
     on a given criterea. For example: 10 most used letters for starting a word
@@ -34,10 +34,29 @@ def limit_freq_threshold(num):
     -------
     acceptable_letters  [str]
     """
-    freq_repo = dict(zip(DataValues.FIRST_LETTER_FREQ.values(),
-                         DataValues.FIRST_LETTER_FREQ.keys()))
-    acceptable_freq = sorted(freq_repo.keys())[::-1][:num]
-    acceptable_letters = [freq_repo[freq] for freq in acceptable_freq]
+    freq_repo = DataValues.FIRST_LETTER_FREQ
+    # freq_repo = dict(zip(DataValues.FIRST_LETTER_FREQ.values(),
+    #                      DataValues.FIRST_LETTER_FREQ.keys()))
+    reversed_freq_repo = {}
+    for key, value in freq_repo.iteritems():
+        if value in reversed_freq_repo.keys():
+            reversed_freq_repo[value].append(key)
+        else:
+            reversed_freq_repo[value] = [key]
+
+    acceptable_freq = sorted(freq_repo.values())[::-1][:num]
+
+    acceptable_lists_of_letters = [reversed_freq_repo[freq]
+                                   for freq in acceptable_freq]
+
+    acceptable_letters = []
+    for letter_list in acceptable_lists_of_letters[:num]:
+        if len(letter_list) == 1:
+            acceptable_letters.append(letter_list[0])
+        else:
+            acceptable_letters.append(
+                choice(list(set(letter_list) - set(acceptable_letters))))
+
     return acceptable_letters
 
 

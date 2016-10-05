@@ -131,6 +131,8 @@ def make_sentence_starting_with_letter(letter, text_model):
     -------
     sentence:               str
     """
+    # Sent a pull request to Markovify to have this done efficiently. Should
+    # redo this function if gets accepted.
     sentence = None
     while True:
         try:
