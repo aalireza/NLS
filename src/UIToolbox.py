@@ -23,6 +23,12 @@ import os
 
 
 def argument_handler():
+
+    def word_threshold_type(w):
+        if not (1 < w < 27):
+            raise argparse.ArgumentTypeError("Specified threshold is invalid")
+        return w
+
     parser = argparse.ArgumentParser()
     arg_group = parser.add_mutually_exclusive_group(required=True)
     arg_group.add_argument("-e", "--encrypt", help="Encrypt a text",
@@ -33,8 +39,9 @@ def argument_handler():
                            action='store_true')
     parser.add_argument("-w", "--word_threshold",
                         help=str("What's the lower limit on the most used " +
-                                 "letter to start a sentence or a word?"),
-                        type=int, default=10)
+                                 "letter to start a sentence or a word? Shoud" +
+                                 "be an integer `n` where 1 < n < 27"),
+                        type=word_threshold_type, default=10)
     parser.add_argument("-t", "--plaintext", help="What's your message?",
                         type=str)
     parser.add_argument("-p", "--password", help="What's your password?",
