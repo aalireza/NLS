@@ -14,8 +14,6 @@
  limitations under the License.
 """
 
-from random import choice
-import DataValues
 import cPickle as pickle
 import markovify
 
@@ -94,30 +92,6 @@ def load_text_model(model_dump_abs_path):
         return None
 
 
-def produce_random_freq_filler(letter):
-    """
-    Produces a string like "car in" if `letter` == 'c'. The first word is a
-    common word that should start with `letter` and the second one is a filler.
-    This structure is needed for markovify to generate the needed sentence,
-    fast.
-
-    Arguments
-    ---------
-    letter              str
-
-    Returns
-    -------
-    word_block          str
-
-    See Also
-    --------
-    DataValues.Frequent_Words
-    """
-    word_block = "{} {}".format(choice(DataValues.FREQUENT_WORDS[letter]),
-                                choice(DataValues.FILLERS))
-    return word_block
-
-
 def make_sentence_starting_with_letter(letter, text_model):
     """
     Makes a valid sentence that starts with `letter`
@@ -131,21 +105,28 @@ def make_sentence_starting_with_letter(letter, text_model):
     -------
     sentence:               str
     """
-    # Sent a pull request to Markovify to have this done efficiently. Should
-    # redo this function if gets accepted.
     sentence = None
-    while True:
-        try:
-            sentence = text_model.make_sentence_with_start(
-                produce_random_freq_filler(letter))
-        except KeyError:
-            pass
+    while sentence is None:
+        first_word = None
+        while first_word is None:
+            candidates = list(text_model.chain.gen())
+            try:
+                first_word = filter(
+                    lambda word: word[0] in [letter.upper(), letter.lower()],
+                    candidates[:len(candidates) - 1])[0]
+                second_word = candidates[candidates.index(first_word) + 1]
+            except IndexError:
+                pass
+        sentence = text_model.make_sentence((first_word, second_word))
         if sentence is not None:
-            if sentence.count('.') == 1:
-                break
-    # Make first letter of every sentence capitalized.
-    sentence = sentence[0].upper() + sentence[1:]
-    return sentence
+            # Ensuring that the sentence doesn't contain initials like U.S. or
+            # A.M. to facilitate spliting by sentences.
+            if sentence.count('.') != 1:
+                sentence = None
+            else:
+                # Make first letter of every sentence capitalized.
+                sentence = sentence[0].upper() + sentence[1:]
+                return sentence
 
 
 def generate_text_based_on_letter_list(letters, text_model, silent=False):
@@ -189,6 +170,7 @@ def derive_first_letter_of_every_sentence(text):
     """
     sentences = [text[0]] + [text[j]
                              for j in xrange(2, len(text))
-                             if text[j - 2] == '.' and text[j - 1] == ' ']
+                             if (text[j - 2] == '.' and
+                                 text[j - 1] == ' ')]
     letters = [sentence[0].lower() for sentence in sentences]
     return letters
