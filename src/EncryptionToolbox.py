@@ -34,7 +34,7 @@ def gen_key(password, salt, dkLen=BLOCKSIZE):
     """
     Implement PBKDF2 to make short passwords match the BLOCKSIZE.
 
-    Arguments
+    Parameters
     ---------
     password            str
     salt                str

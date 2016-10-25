@@ -20,7 +20,8 @@ import string
 # mapping is not compatible with the standard mapping. For example, `a` in
 # standard formatting is `10` in base 10, yet here `a` would be `0` in base 10.
 NUM_REPO = {i: letter for i, letter in zip(xrange(26), string.lowercase)}
-# `STANDARD_NUM_REPO` is the standard mapping.
+# `STANDARD_NUM_REPO` is the standard mapping that corresponds to the alphabet
+# used for the usual representation of hexadecimal numbers.
 STANDARD_NUM_REPO = dict(
     dict({i: str(i) for i in xrange(10)}).items() +
     dict({10: 'a', 11: 'b', 12: 'c', 13: 'd', 14: 'e', 15: 'f', 16: 'g',
@@ -32,7 +33,7 @@ def letter_to_decimal(letter):
     """
     Gets the decimal value of a particular letter in NLS formatting?
 
-    Arguments
+    Parameters
     ---------
     letter          str
 
@@ -48,7 +49,7 @@ def decimal_to_letter(decimal):
     """
     Gets the letter value of a particular decimal in NLS formatting.
 
-    Arguments
+    Parameters
     ---------
     decimal         int
 
@@ -68,7 +69,7 @@ def decimals_to_letters_change_base(decimal, target_base,
     i.e. if target_base = 16 then te return value would be the same as
     hex(decimal).
 
-    Arguments
+    Parameters
     ---------
     decimal             int
     target_base         int
@@ -101,7 +102,7 @@ def letters_to_decimals_change_base(number, base, standard_formatting=False):
     `standard_formatting` is set to True, then it's assumed that the current
     representation of the number is standard.
 
-    Arguments
+    Parameters
     ---------
     number              str
     base                int
@@ -131,7 +132,7 @@ def change_base(letter_based_number, origin_base, target_base,
     Changes the base of a number in letter formatting in base `origin_base` to
     a letter formatting of base `target_base`.
 
-    Arguments
+    Parameters
     ---------
     letter_based_number     str
     origin_base             int

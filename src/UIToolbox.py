@@ -81,7 +81,7 @@ def choice_handler():
         Asks for a valid choice defined by existence in a list of available
         choices.
 
-        Arguments
+        Parameters
         ---------
         question        str
         choices         [str]
@@ -103,7 +103,7 @@ def choice_handler():
         """
         The main interface for encrypting and encoding.
 
-        Arguments
+        Parameters
         ---------
         model_loc               str
                                 Absolute path to the save text model
@@ -160,7 +160,7 @@ def choice_handler():
         """
         The main interface for decoding and decrypting
 
-        Arguments
+        Parameters
         ---------
         text_file_abs_path      str
                                 Absolute path to the file containing the encoded
@@ -194,7 +194,7 @@ def choice_handler():
         """
         The interactive method.
 
-        Arguments
+        Parameters
         ---------
         model_loc               str
         text_file_abs_path      str
@@ -254,7 +254,7 @@ def abs_path_validity(abs_path, file_name, must_exist=False, addenda=""):
     It used to verify the validity of a path and to indicate whether it exists
     or it's a path that can exist.
 
-    Arguments
+    Parameters
     ---------
     abs_path        str
     file_name       str
@@ -287,7 +287,7 @@ def model_loc_handler(model_loc, silent=False):
     """
     Asks for text model location. If not found, trains the hmm model.
 
-    Arguments
+    Parameters
     ---------
     model_loc           str
                         Absolute path to text model

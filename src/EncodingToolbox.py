@@ -26,7 +26,7 @@ def limit_freq_threshold(num):
     on a given criterea. For example: 10 most used letters for starting a word
     or a sentence.
 
-    Arguments
+    Parameters
     ---------
     num:                int
 
@@ -43,9 +43,10 @@ def limit_freq_threshold(num):
             reversed_freq_repo[value].append(key)
         else:
             reversed_freq_repo[value] = [key]
-
+    # `acceptable_freq` is the list of `num` frequently used letter freqiencies
+    # in descending order. It'll used to derive the `num` frequently used
+    # letters.
     acceptable_freq = sorted(freq_repo.values())[::-1][:num]
-
     acceptable_lists_of_letters = [reversed_freq_repo[freq]
                                    for freq in acceptable_freq]
 
@@ -70,7 +71,7 @@ def first_letter_based_freq_rename(number, letters):
     it'd be better to not change the entire formatting, but, if needed, define a
     remapping for the aforementioned changed criterea.
 
-    Arguments
+    Parameters
     ---------
     number              str
     letters             [str]
@@ -92,7 +93,7 @@ def revert_renamed_number(renamed, letters):
     Reverse of EncodingToolbox.first_letter_based_freq_rename to get the
     original formatting
 
-    Arguments
+    Parameters
     ---------
     renamed             str
     letters             [str]
@@ -113,7 +114,7 @@ def encode(ciphertext, text_model, text_file_abs_path, threshold=10,
     Given a ciphertext, it writes the natural language representation of it in
     `text_file_abs_path`
 
-    Arguments
+    Parameters
     ---------
     ciphertext:             str
     text_model:             object
@@ -149,7 +150,7 @@ def decode(text_file_abs_path, threshold=10):
     """
     Decodes a text into a ciphertext.
 
-    Arguments
+    Parameters
     ---------
     text_file_abs_path:     str
 

@@ -22,7 +22,7 @@ def make_text_model(text_file_abs_path):
     """
     Trains a Hidden Markov Model with Markovify.
 
-    Arguments
+    Parameters
     ---------
     text_file_abs_path      str
                             The absolute path to the text file
@@ -47,7 +47,7 @@ def save_text_model(text_model, model_dump_abs_path):
     It saves text_model (which supposed to be present in the memory when it's
     being called) to a binary file located at `model_dump_abs_path`
 
-    Arguments
+    Parameters
     ---------
     text_model:             object
     model_dump_abs_path:    str
@@ -72,7 +72,7 @@ def load_text_model(model_dump_abs_path):
     """
     loads the outcome of MarkovToolbox.save_text_model
 
-    Arguments
+    Parameters
     ---------
     model_dump_abs_path:    str
                             The absolute path to the saved model
@@ -96,7 +96,7 @@ def make_sentence_starting_with_letter(letter, text_model):
     """
     Makes a valid sentence that starts with `letter`
 
-    Arguments
+    Parameters
     ---------
     letter:                 str
     text_model:             Object
@@ -134,7 +134,7 @@ def generate_text_based_on_letter_list(letters, text_model, silent=False):
     Generates a text by repeatedly calling
     MarkovToolbox.make_sentence_starting_with_letter over a list of letters
 
-    Arguments
+    Parameters
     ---------
     letters:            [str]
     text_model:         object
@@ -160,7 +160,7 @@ def derive_first_letter_of_every_sentence(text):
     """
     Given a text, generates a list of first letters of every sentence.
 
-    Arguments
+    Parameters
     ---------
     text:               str
 
